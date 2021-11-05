@@ -27,13 +27,16 @@ io.on('connection', (client) => {
         //Cuando un cliente se conecta a una sala en particular, notificar solo a los clientes que esten conectados a esa sala
         client.broadcast.to(data.sala).emit('listaPersona', usuarios.getPersonasPorSala(data.sala) );
 
+        //Enviar mensaje a los usuarios de la sala cuando un cliente se conecta a la sala
+        client.broadcast.to(data.sala).emit('crearMensaje', crearMensaje({nombre:'Administrador'}, `${data.nombre} se unio`) );//crearMensaje es un metodo que esta en un archivo aparte, creado asi porque ese codigo se esta reutilizando en varias partes
+
 
         // callback( personas );
         callback( usuarios.getPersonasPorSala( data.sala ) )
 
     });
 
-    client.on('crearMensaje', (data) => {
+    client.on('crearMensaje', (data, callback) => {
 
         let persona = usuarios.getPersona( client.id );
 
@@ -43,6 +46,8 @@ io.on('connection', (client) => {
         
         //Enviar mensaje solo a los usuarios de la sala al que esta conectado el cliente
         client.broadcast.to(persona.sala).emit( 'crearMensaje', mensaje );
+
+        callback( mensaje );
 
     });
 
@@ -55,7 +60,7 @@ io.on('connection', (client) => {
         // client.broadcast.emit('crearMensaje', crearMensaje('Administrador', `${personaBorrada.nombre} salio`) );//crearMensaje es un metodo que esta en un archivo aparte, creado asi porque ese codigo se esta reutilizando en varias partes
 
         //Informar a todos los usuarios que estan conectados a la sala del usuario que se esta desconectando
-        client.broadcast.to(personaBorrada.sala).emit('crearMensaje', crearMensaje('Administrador', `${personaBorrada.nombre} salio`) );//crearMensaje es un metodo que esta en un archivo aparte, creado asi porque ese codigo se esta reutilizando en varias partes
+        client.broadcast.to(personaBorrada.sala).emit('crearMensaje', crearMensaje({nombre:'Administrador'}, `${personaBorrada.nombre} salio`) );//crearMensaje es un metodo que esta en un archivo aparte, creado asi porque ese codigo se esta reutilizando en varias partes
         
         //CAda vez que un cliente se desconecta emitir un evento a todos los usuarios para Informar las personas conectadas
         // client.broadcast.emit('listaPersona', usuarios.getPersonas() );
